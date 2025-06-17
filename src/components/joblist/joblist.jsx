@@ -130,6 +130,25 @@ const jobSections = [
         isUrgent: false,
         isFeatured: true,
         link: "#"
+      },
+      {
+        id: 'job-17',
+        title: "Product Designer",
+        company: "Designify",
+        logo: "https://via.placeholder.com/60x60?text=DF",
+        location: "Chennai, India",
+        type: "Full Time",
+        isRemote: false,
+        salary: "₹7-11 LPA",
+        experience: "2-5 years",
+        datePosted: "Today",
+        description: "Design beautiful and functional interfaces for web and mobile apps.",
+        skills: ["Figma", "UI/UX", "Prototyping", "Design Systems"],
+        companyWebsite: "https://designify.com",
+        category: "Design",
+        isUrgent: false,
+        isFeatured: true,
+        link: "#"
       }
     ]
   },
@@ -194,6 +213,25 @@ const jobSections = [
         isUrgent: false,
         isFeatured: false,
         link: "#"
+      },
+      {
+        id: 'job-18',
+        title: "Remote QA Tester",
+        company: "Testly",
+        logo: "https://via.placeholder.com/60x60?text=TQ",
+        location: "Remote",
+        type: "Remote",
+        isRemote: true,
+        salary: "₹6-9 LPA",
+        experience: "2-4 years",
+        datePosted: "Today",
+        description: "Test web and mobile applications for bugs and usability issues.",
+        skills: ["QA", "Testing", "Automation", "Jest", "Cypress"],
+        companyWebsite: "https://testly.com",
+        category: "Technology",
+        isUrgent: false,
+        isFeatured: false,
+        link: "#"
       }
     ]
   },
@@ -239,6 +277,25 @@ const jobSections = [
         isUrgent: true,
         isFeatured: false,
         link: "#"
+      },
+      {
+        id: 'job-19',
+        title: "Urgent React Native Developer",
+        company: "Appify",
+        logo: "https://via.placeholder.com/60x60?text=AR",
+        location: "Gurgaon, India",
+        type: "Full Time",
+        isRemote: false,
+        salary: "₹10-14 LPA",
+        experience: "2-4 years",
+        datePosted: "Today",
+        description: "Build and maintain mobile apps using React Native. Immediate joiners preferred.",
+        skills: ["React Native", "Mobile", "Redux", "APIs"],
+        companyWebsite: "https://appify.com",
+        category: "Technology",
+        isUrgent: true,
+        isFeatured: false,
+        link: "#"
       }
     ]
   },
@@ -281,6 +338,25 @@ const jobSections = [
         skills: ["Digital Marketing", "Social Media", "Content Creation", "Analytics", "Design"],
         companyWebsite: "https://brandmax.com",
         category: "Marketing",
+        isUrgent: false,
+        isFeatured: false,
+        link: "#"
+      },
+      {
+        id: 'job-20',
+        title: "Software Engineering Intern",
+        company: "CodeLabs",
+        logo: "https://via.placeholder.com/60x60?text=CL",
+        location: "Hyderabad, India",
+        type: "Internship",
+        isRemote: false,
+        salary: "₹25k/month",
+        experience: "0 years",
+        datePosted: "3 days ago",
+        description: "Work on real-world projects with experienced engineers. Learn coding best practices and software development lifecycle.",
+        skills: ["Python", "Java", "Data Structures", "Algorithms", "Git"],
+        companyWebsite: "https://codelabs.com",
+        category: "Technology",
         isUrgent: false,
         isFeatured: false,
         link: "#"
