@@ -28,8 +28,9 @@ export default function Job() {
       rating: 4.5,
       jobs: [
         { id: 101, title: "Senior Software Engineer", type: "Full-time", salary: "$120,000 - $150,000", posted: "2 days ago", remote: true },
-        { id: 102, title: "Product Manager", type: "Full-time", salary: "$100,000 - $130,000", posted: "1 week ago", remote: false },
-        { id: 103, title: "UI/UX Designer", type: "Contract", salary: "$80,000 - $100,000", posted: "3 days ago", remote: true }
+        { id: 102, title: "DevOps Engineer", type: "Full-time", salary: "$110,000 - $140,000", posted: "1 week ago", remote: true },
+        { id: 103, title: "UI/UX Designer", type: "Contract", salary: "$80,000 - $100,000", posted: "3 days ago", remote: true },
+        { id: 104, title: "Cloud Architect", type: "Full-time", salary: "$140,000 - $170,000", posted: "5 days ago", remote: false }
       ]
     },
     {
@@ -441,29 +442,3 @@ export default function Job() {
               Next
             </button>
           </div>
-        )}
-
-        {/* No Results */}
-        {filteredCompanies.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-gray-500 mb-4">
-              <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-medium">No companies found</h3>
-              <p>Try adjusting your search criteria</p>
-            </div>
-            <button
-              onClick={() => {
-                setSearchTerm('')
-                setLocationFilter('')
-                setJobTypeFilter('')
-              }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm sm:text-base"
-            >
-              Clear All Filters
-            </button>
-          </div>
-        )}
-      </div>
-    </section>
-  )
-}
