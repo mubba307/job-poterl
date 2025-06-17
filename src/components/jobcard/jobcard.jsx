@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { API_ENDPOINTS } from '../../config/api';
 import { 
   Heart, 
   Share2, 
@@ -36,12 +37,13 @@ export function JobCardList() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    axios.get('https://mocki.io/v1/1e2e7b7e-2a4d-4c2e-9e2e-7b7e2a4d4c2e') // Replace with your API
+    axios.get(API_ENDPOINTS.JOBS)
       .then(res => {
         setJobs(res.data.jobs || res.data); // adapt to your API shape
         setLoading(false);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('Failed to fetch jobs:', err);
         setError('Failed to load jobs');
         setLoading(false);
       });

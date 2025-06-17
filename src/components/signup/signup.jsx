@@ -2,7 +2,8 @@
 import { useState } from 'react';
 import { Eye, EyeOff, User, Mail, Lock, Briefcase, MapPin, Phone } from 'lucide-react';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import axios from 'axios';
+import { API_ENDPOINTS } from '../../config/api';
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -24,6 +25,8 @@ export default function Signup() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -31,8 +34,7 @@ export default function Signup() {
       ...prev,
       [name]: value
     }));
-    
-    // Clear error when user starts typing
+
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -79,23 +81,47 @@ export default function Signup() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
     if (!validateForm()) return;
 
     setIsSubmitting(true);
+    setError('');
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+      const response = await axios.post(API_ENDPOINTS.SIGNUP, {
+        ...formData,
+        userType: formData.userType
+      });
 
-    alert('Account created successfully! Welcome to JobPortal.');
-    setIsSubmitting(false);
+      if (response.data.success) {
+        setSuccess('Account created successfully! Welcome to JobPortal.');
+        // Reset form
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phone: '',
+          password: '',
+          confirmPassword: '',
+          userType: 'jobseeker',
+          location: '',
+          experience: '',
+          skills: '',
+          company: '',
+          industry: ''
+        });
+        
+        // Redirect to login after 2 seconds
+        setTimeout(() => {
+          window.location.href = '/loginme';
+        }, 2000);
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-
-  // In your home page or _middleware.js (Next.js 13+)
-  const userIsLoggedIn = false; // Replace with actual login state
-  if (!userIsLoggedIn) {
-    redirect('/signup');
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
@@ -426,3 +452,4 @@ export default function Signup() {
     </div>
   );
 }
+

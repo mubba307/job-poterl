@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Plus, Trash2, Eye, Download, Edit3, Save, X, Move, Star, Briefcase, GraduationCap, Award, User, Mail, Phone, Globe, Github, Linkedin } from "lucide-react";
+import { API_ENDPOINTS } from '../../config/api';
+import axios from 'axios';
 
 export default function Resume() {
   const [form, setForm] = useState({
@@ -83,6 +85,19 @@ export default function Resume() {
     }));
   };
 
+  useEffect(() => {
+    fetchResumes();
+  }, []);
+
+  const fetchResumes = async () => {
+    try {
+      const response = await axios.get(API_ENDPOINTS.RESUME);
+      setSavedResumes(response.data);
+    } catch (error) {
+      console.error('Error fetching resumes:', error);
+    }
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -99,15 +114,14 @@ export default function Resume() {
       };
 
       if (editingResume) {
-        setSavedResumes(prev => prev.map(resume => 
-          resume.id === editingResume.id ? resumeData : resume
-        ));
+        await axios.put(API_ENDPOINTS.RESUME_BY_ID(editingResume.id), resumeData);
         setEditingResume(null);
       } else {
-        setSavedResumes(prev => [...prev, resumeData]);
+        await axios.post(API_ENDPOINTS.RESUME, resumeData);
       }
 
       resetForm();
+      fetchResumes(); // Refresh the list
       setSuccess(editingResume ? "Resume updated successfully!" : "Resume saved successfully!");
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
@@ -142,8 +156,13 @@ export default function Resume() {
     setActiveSection("personal");
   };
 
-  const handleDelete = (id) => {
-    setSavedResumes(prev => prev.filter(resume => resume.id !== id));
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(API_ENDPOINTS.RESUME_BY_ID(id));
+      setSavedResumes(prev => prev.filter(resume => resume.id !== id));
+    } catch (error) {
+      console.error('Error deleting resume:', error);
+    }
   };
 
   const exportToPDF = (resume) => {

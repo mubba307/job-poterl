@@ -1,7 +1,9 @@
 'use client';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock, User, Briefcase, AlertCircle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import axios from 'axios';
+import { API_ENDPOINTS } from '../../config/api';
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -14,6 +16,7 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
+  const [error, setError] = useState('');
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -52,23 +55,38 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!validateForm()) return;
 
     setIsLoading(true);
+    setError('');
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Simulate login success
-    setLoginSuccess(true);
-    setIsLoading(false);
-    
-    // Reset form after success
-    setTimeout(() => {
-      setLoginSuccess(false);
-      setFormData({ email: '', password: '' });
-    }, 2000);
+    try {
+      const response = await axios.post(API_ENDPOINTS.LOGIN, {
+        email: formData.email,
+        password: formData.password,
+        userType: userType
+      });
+
+      if (response.data.success) {
+        // Store user token
+        localStorage.setItem('userToken', response.data.token);
+        localStorage.setItem('userType', userType);
+        setLoginSuccess(true);
+        
+        // Redirect based on user type
+        setTimeout(() => {
+          if (userType === 'employer') {
+            window.location.href = '/admin-dashboard';
+          } else {
+            window.location.href = '/job-track';
+          }
+        }, 2000);
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleDemoLogin = (type) => {

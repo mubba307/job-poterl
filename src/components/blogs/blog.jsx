@@ -1,6 +1,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { Plus, Edit, Trash, Eye, Heart, MessageCircle, Share2, Calendar, User } from 'lucide-react';
+import { API_ENDPOINTS } from '../../config/api';
 
 export default function Blog() {
   const [posts, setPosts] = useState([]);
@@ -18,50 +20,17 @@ export default function Blog() {
 
   // Fetch blog posts (replace URL with your API endpoint)
   useEffect(() => {
-    async function fetchPosts() {
-      setLoading(true);
-      setError("");
-      try {
-        // const response = await axios.get("/api/blog");
-        // setPosts(response.data);
-        // Demo data:
-        setPosts([
-          {
-            id: 1,
-            title: "How to Write a Winning Resume",
-            date: "2025-06-10",
-            summary: "Tips and tricks to make your resume stand out to employers.",
-            content: "Full content for resume tips...",
-            author: "Admin",
-            image: "https://images.unsplash.com/photo-1515168833906-d2a3b82b3029?auto=format&fit=crop&w=400&q=80"
-          },
-          {
-            id: 2,
-            title: "Top 10 Interview Questions and How to Answer Them",
-            date: "2025-06-05",
-            summary: "Prepare for your next interview with these common questions.",
-            content: "Full content for interview questions...",
-            author: "Career Coach",
-            image: "https://images.unsplash.com/photo-1503676382389-4809596d5290?auto=format&fit=crop&w=400&q=80"
-          },
-          {
-            id: 3,
-            title: "Career Growth in the Tech Industry",
-            date: "2025-05-28",
-            summary: "Explore opportunities and trends in tech careers.",
-            content: "Full content for tech careers...",
-            author: "Guest Writer",
-            image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=400&q=80"
-          },
-        ]);
-      } catch (err) {
-        setError("Failed to load blog posts.");
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchPosts();
+    fetchBlogs();
   }, []);
+
+  const fetchBlogs = async () => {
+    try {
+      const response = await axios.get(API_ENDPOINTS.BLOG);
+      setPosts(response.data);
+    } catch (error) {
+      console.error('Error fetching blogs:', error);
+    }
+  };
 
   // Handle new post input
   const handleInputChange = (e) => {
@@ -79,20 +48,12 @@ export default function Blog() {
     setLoading(true);
     setError("");
     try {
-      // const response = await axios.post("/api/blog", newPost);
-      // setPosts((prev) => [response.data, ...prev]);
-      // Demo: Add locally
-      setPosts((prev) => [
-        {
-          ...newPost,
-          id: Date.now(),
-          date: new Date().toISOString().slice(0, 10),
-        },
-        ...prev,
-      ]);
+      const response = await axios.post(API_ENDPOINTS.BLOG, newPost);
+      setPosts((prev) => [response.data, ...prev]);
       setNewPost({ title: "", summary: "", content: "", author: "", image: "" });
       setShowForm(false);
-    } catch (err) {
+    } catch (error) {
+      console.error('Error adding blog:', error);
       setError("Failed to add post.");
     } finally {
       setLoading(false);
@@ -109,9 +70,10 @@ export default function Blog() {
     setLoading(true);
     setError("");
     try {
-      // await axios.delete(`/api/blog/${id}`);
+      await axios.delete(API_ENDPOINTS.BLOG_BY_ID(id));
       setPosts((prev) => prev.filter((post) => post.id !== id));
-    } catch (err) {
+    } catch (error) {
+      console.error('Error deleting blog:', error);
       setError("Failed to delete post.");
     } finally {
       setLoading(false);

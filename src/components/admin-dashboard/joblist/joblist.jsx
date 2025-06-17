@@ -1,18 +1,27 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { API_ENDPOINTS } from '../../../config/api';
 
 const JobList = () => {
   const [jobs, setJobs] = useState([]);
 
   const fetchJobs = async () => {
-    const response = await axios.get('/api/jobs'); // <-- Check this URL
-    setJobs(response.data);
+    try {
+      const response = await axios.get(API_ENDPOINTS.JOBS);
+      setJobs(response.data);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+    }
   };
 
   const deleteJob = async (id) => {
-    await axios.delete(`/api/jobs/${id}`);
-    fetchJobs();
+    try {
+      await axios.delete(API_ENDPOINTS.DELETE_JOB(id));
+      fetchJobs(); // Refresh the list
+    } catch (error) {
+      console.error('Error deleting job:', error);
+    }
   };
 
   useEffect(() => {
