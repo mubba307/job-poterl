@@ -1,8 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Plus, Trash2, Eye, Download, Edit3, Save, X, Move, Star, Briefcase, GraduationCap, Award, User, Mail, Phone, Globe, Github, Linkedin } from "lucide-react";
-import { API_ENDPOINTS } from '../../config/api';
-import axios from 'axios';
 
 export default function Resume() {
   const [form, setForm] = useState({
@@ -91,10 +89,16 @@ export default function Resume() {
 
   const fetchResumes = async () => {
     try {
-      const response = await axios.get(API_ENDPOINTS.RESUME);
-      setSavedResumes(response.data);
+      // Use localStorage instead of API call for offline functionality
+      const savedResumesData = localStorage.getItem('savedResumes');
+      if (savedResumesData) {
+        setSavedResumes(JSON.parse(savedResumesData));
+      } else {
+        setSavedResumes([]);
+      }
     } catch (error) {
       console.error('Error fetching resumes:', error);
+      setSavedResumes([]);
     }
   };
 
@@ -113,11 +117,20 @@ export default function Resume() {
         updatedAt: new Date().toISOString()
       };
 
+      // Get existing resumes from localStorage
+      const existingResumes = JSON.parse(localStorage.getItem('savedResumes') || '[]');
+
       if (editingResume) {
-        await axios.put(API_ENDPOINTS.RESUME_BY_ID(editingResume.id), resumeData);
+        // Update existing resume
+        const updatedResumes = existingResumes.map(resume => 
+          resume.id === editingResume.id ? resumeData : resume
+        );
+        localStorage.setItem('savedResumes', JSON.stringify(updatedResumes));
         setEditingResume(null);
       } else {
-        await axios.post(API_ENDPOINTS.RESUME, resumeData);
+        // Add new resume
+        const newResumes = [...existingResumes, resumeData];
+        localStorage.setItem('savedResumes', JSON.stringify(newResumes));
       }
 
       resetForm();
@@ -126,6 +139,7 @@ export default function Resume() {
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
       setError("Failed to save resume.");
+      console.error('Error saving resume:', err);
     } finally {
       setLoading(false);
     }
@@ -158,8 +172,11 @@ export default function Resume() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(API_ENDPOINTS.RESUME_BY_ID(id));
-      setSavedResumes(prev => prev.filter(resume => resume.id !== id));
+      // Get existing resumes from localStorage
+      const existingResumes = JSON.parse(localStorage.getItem('savedResumes') || '[]');
+      const updatedResumes = existingResumes.filter(resume => resume.id !== id);
+      localStorage.setItem('savedResumes', JSON.stringify(updatedResumes));
+      setSavedResumes(updatedResumes);
     } catch (error) {
       console.error('Error deleting resume:', error);
     }

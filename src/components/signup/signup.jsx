@@ -2,10 +2,10 @@
 import { useState } from 'react';
 import { Eye, EyeOff, User, Mail, Lock, Briefcase, MapPin, Phone } from 'lucide-react';
 import Link from 'next/link';
-import axios from 'axios';
-import { API_ENDPOINTS } from '../../config/api';
+import { useRouter } from 'next/navigation';
 
 export default function Signup() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -46,81 +46,127 @@ export default function Signup() {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
-    if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
+    console.log('Validating form with data:', formData);
+
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+      console.log('First name validation failed');
+    }
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
+      console.log('Last name validation failed');
+    }
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
+      console.log('Email validation failed - empty');
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email is invalid';
+      console.log('Email validation failed - invalid format');
     }
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required';
+      console.log('Phone validation failed');
     } else if (!/^\d{10}$/.test(formData.phone.replace(/\s+/g, ''))) {
       newErrors.phone = 'Phone number must be 10 digits';
+      console.log('Phone validation failed - wrong format');
     }
     if (!formData.password) {
       newErrors.password = 'Password is required';
+      console.log('Password validation failed');
     } else if (formData.password.length < 8) {
       newErrors.password = 'Password must be at least 8 characters';
+      console.log('Password validation failed - too short');
     }
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
+      console.log('Password confirmation validation failed');
     }
-    if (!formData.location.trim()) newErrors.location = 'Location is required';
+    if (!formData.location.trim()) {
+      newErrors.location = 'Location is required';
+      console.log('Location validation failed');
+    }
 
     if (formData.userType === 'jobseeker') {
-      if (!formData.experience) newErrors.experience = 'Experience level is required';
-      if (!formData.skills.trim()) newErrors.skills = 'Skills are required';
+      if (!formData.experience) {
+        newErrors.experience = 'Experience level is required';
+        console.log('Experience validation failed');
+      }
+      if (!formData.skills.trim()) {
+        newErrors.skills = 'Skills are required';
+        console.log('Skills validation failed');
+      }
     } else {
-      if (!formData.company.trim()) newErrors.company = 'Company name is required';
-      if (!formData.industry) newErrors.industry = 'Industry is required';
+      if (!formData.company.trim()) {
+        newErrors.company = 'Company name is required';
+        console.log('Company validation failed');
+      }
+      if (!formData.industry) {
+        newErrors.industry = 'Industry is required';
+        console.log('Industry validation failed');
+      }
     }
 
+    console.log('Validation errors:', newErrors);
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const isValid = Object.keys(newErrors).length === 0;
+    console.log('Form is valid:', isValid);
+    return isValid;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    console.log('Form submitted with data:', formData);
+    
+    // Validate form first
+    if (!validateForm()) {
+      console.log('Form validation failed');
+      return;
+    }
 
+    console.log('Form validation passed, proceeding with signup...');
     setIsSubmitting(true);
     setError('');
 
-    try {
-      const response = await axios.post(API_ENDPOINTS.SIGNUP, {
-        ...formData,
-        userType: formData.userType
-      });
+    // Simulate successful signup (offline mode)
+    console.log('Simulating successful signup...');
+    
+    // Store user data in localStorage for demo purposes
+    const userData = {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      userType: formData.userType,
+      token: 'demo_token_' + Date.now()
+    };
+    
+    localStorage.setItem('userData', JSON.stringify(userData));
+    localStorage.setItem('userType', formData.userType);
+    
+    setSuccess('Account created successfully! Welcome to JobPortal. Redirecting to dashboard...');
+    
+    // Reset form
+    setFormData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      password: '',
+      confirmPassword: '',
+      userType: 'jobseeker',
+      location: '',
+      experience: '',
+      skills: '',
+      company: '',
+      industry: ''
+    });
+    
+    // Redirect to dashboard after 3 seconds (giving more time to read success message)
+    setTimeout(() => {
+      console.log('Redirecting to dashboard...');
+      router.push('/dashboard');
+    }, 3000);
 
-      if (response.data.success) {
-        setSuccess('Account created successfully! Welcome to JobPortal.');
-        // Reset form
-        setFormData({
-          firstName: '',
-          lastName: '',
-          email: '',
-          phone: '',
-          password: '',
-          confirmPassword: '',
-          userType: 'jobseeker',
-          location: '',
-          experience: '',
-          skills: '',
-          company: '',
-          industry: ''
-        });
-        
-        // Redirect to login after 2 seconds
-        setTimeout(() => {
-          window.location.href = '/loginme';
-        }, 2000);
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    setIsSubmitting(false);
   };
 
   return (
@@ -131,6 +177,36 @@ export default function Signup() {
           <h1 className="text-3xl font-bold text-white text-center">Join JobPortal</h1>
           <p className="text-blue-100 text-center mt-2">Start your career journey today</p>
         </div>
+
+        {/* Success Message */}
+        {success && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mx-8 mt-4 flex items-center space-x-3">
+            <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-green-800">Success!</h3>
+              <p className="text-sm text-green-600">{success}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mx-8 mt-4 flex items-center space-x-3">
+            <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-red-800">Error!</h3>
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          </div>
+        )}
 
         <form className="p-8 space-y-6" onSubmit={handleSubmit}>
           {/* User Type Selection */}
@@ -177,7 +253,7 @@ export default function Signup() {
                 name="firstName"
                 value={formData.firstName}
                 onChange={handleInputChange}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black ${
                   errors.firstName ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Enter your first name"
@@ -194,7 +270,7 @@ export default function Signup() {
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleInputChange}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black ${
                   errors.lastName ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Enter your last name"
@@ -216,7 +292,7 @@ export default function Signup() {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black ${
                     errors.email ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="your@email.com"
@@ -236,7 +312,7 @@ export default function Signup() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black ${
                     errors.phone ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="1234567890"
@@ -258,7 +334,7 @@ export default function Signup() {
                 name="location"
                 value={formData.location}
                 onChange={handleInputChange}
-                className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black ${
                   errors.location ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="City, State/Country"
@@ -278,7 +354,7 @@ export default function Signup() {
                   name="experience"
                   value={formData.experience}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black ${
                     errors.experience ? 'border-red-500' : 'border-gray-300'
                   }`}
                 >
@@ -300,7 +376,7 @@ export default function Signup() {
                   name="skills"
                   value={formData.skills}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black ${
                     errors.skills ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="e.g., JavaScript, Python, Marketing"
@@ -319,7 +395,7 @@ export default function Signup() {
                   name="company"
                   value={formData.company}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black ${
                     errors.company ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="Your company name"
@@ -366,7 +442,7 @@ export default function Signup() {
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black ${
                     errors.password ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="Create a strong password"
@@ -393,7 +469,7 @@ export default function Signup() {
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
-                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black ${
                     errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="Confirm your password"

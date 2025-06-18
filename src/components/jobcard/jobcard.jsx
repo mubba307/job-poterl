@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
-import { API_ENDPOINTS } from '../../config/api';
+// import axios from 'axios';
+// import { API_ENDPOINTS } from '../../config/api';
 import { 
   Heart, 
   Share2, 
@@ -30,16 +30,72 @@ import {
   Download
 } from 'lucide-react';
 
-// Responsive JobCardList that fetches jobs via axios and renders JobCard
+// Demo job data for offline functionality
+const demoJobs = [
+  {
+    id: 1,
+    title: "Senior React Developer",
+    company: "TechCorp Inc.",
+    location: "San Francisco, CA",
+    salary: "$120,000 - $150,000",
+    type: "Full-time",
+    experience: "5+ years",
+    description: "We're looking for an experienced React developer to join our team...",
+    requirements: ["React", "TypeScript", "Node.js", "AWS"],
+    deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    views: 245,
+    applications: 12
+  },
+  {
+    id: 2,
+    title: "UX/UI Designer",
+    company: "Design Studio",
+    location: "New York, NY",
+    salary: "$90,000 - $110,000",
+    type: "Full-time",
+    experience: "3+ years",
+    description: "Creative UX/UI designer needed for innovative projects...",
+    requirements: ["Figma", "Adobe Creative Suite", "User Research", "Prototyping"],
+    deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+    views: 189,
+    applications: 8
+  },
+  {
+    id: 3,
+    title: "Data Scientist",
+    company: "Analytics Pro",
+    location: "Remote",
+    salary: "$100,000 - $130,000",
+    type: "Full-time",
+    experience: "4+ years",
+    description: "Join our data science team to build ML models...",
+    requirements: ["Python", "TensorFlow", "SQL", "Statistics"],
+    deadline: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+    views: 312,
+    applications: 15
+  }
+];
+
+// Responsive JobCardList that uses demo data for offline functionality
 export function JobCardList() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Simulate API call delay
+    const timer = setTimeout(() => {
+      setJobs(demoJobs);
+      setLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+    
+    /* 
+    // Uncomment this when your backend is ready
     axios.get(API_ENDPOINTS.JOBS)
       .then(res => {
-        setJobs(res.data.jobs || res.data); // adapt to your API shape
+        setJobs(res.data.jobs || res.data);
         setLoading(false);
       })
       .catch((err) => {
@@ -47,6 +103,7 @@ export function JobCardList() {
         setError('Failed to load jobs');
         setLoading(false);
       });
+    */
   }, []);
 
   return (

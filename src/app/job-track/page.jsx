@@ -1,4 +1,4 @@
-import JobTracker from '@/components/jobteacker/jobteacker'
+import JobTracker from '../../components/jobteacker/jobteacker'
 import Navbar from '@/components/navbar/navbar'
 import React from 'react'
 

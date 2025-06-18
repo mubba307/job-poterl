@@ -2,10 +2,10 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock, User, Briefcase, AlertCircle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
-import axios from 'axios';
-import { API_ENDPOINTS } from '../../config/api';
+import { useRouter } from 'next/navigation';
 
 export default function Login() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -17,6 +17,7 @@ export default function Login() {
   const [rememberMe, setRememberMe] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [loginType, setLoginType] = useState('');
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -60,49 +61,48 @@ export default function Login() {
     setIsLoading(true);
     setError('');
     
-    try {
-      const response = await axios.post(API_ENDPOINTS.LOGIN, {
-        email: formData.email,
-        password: formData.password,
-        userType: userType
+    // Check if this is an admin login
+    const isAdmin = formData.email === 'admin@gmail.com' && formData.password === 'admin123';
+    
+    console.log('Login attempt:', { email: formData.email, isAdmin });
+    
+    // Simulate successful login (offline mode)
+    console.log('Simulating successful login...');
+    
+    if (isAdmin) {
+      localStorage.setItem('adminToken', 'demo_token_' + Date.now());
+      localStorage.setItem('isAdmin', 'true');
+      localStorage.setItem('userType', 'admin');
+      setLoginType('admin');
+      setLoginSuccess(true);
+      
+      console.log('Admin credentials detected, setting localStorage:', {
+        adminToken: localStorage.getItem('adminToken'),
+        isAdmin: localStorage.getItem('isAdmin'),
+        userType: localStorage.getItem('userType')
       });
-
-      if (response.data.success) {
-        // Store user token
-        localStorage.setItem('userToken', response.data.token);
-        localStorage.setItem('userType', userType);
-        setLoginSuccess(true);
-        
-        // Redirect based on user type
-        setTimeout(() => {
-          if (userType === 'employer') {
-            window.location.href = '/admin-dashboard';
-          } else {
-            window.location.href = '/job-track';
-          }
-        }, 2000);
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDemoLogin = (type) => {
-    if (type === 'jobseeker') {
-      setFormData({
-        email: 'john.doe@example.com',
-        password: 'demo123'
-      });
-      setUserType('jobseeker');
+      
+      // Redirect admin to admin dashboard
+      setTimeout(() => {
+        console.log('Redirecting admin to admin dashboard...');
+        router.push('/admin-dashboard');
+      }, 1000); // Reduced delay to 1 second
     } else {
-      setFormData({
-        email: 'hr@company.com',
-        password: 'demo123'
-      });
-      setUserType('employer');
+      localStorage.setItem('userToken', 'demo_token_' + Date.now());
+      localStorage.setItem('userType', userType);
+      setLoginType(userType);
+      setLoginSuccess(true);
+      
+      // Redirect regular users to dashboard
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 2000);
     }
+
+    setIsLoading(false);
+
+    // Note: Backend API integration will be added here when the server is ready
+    // For now, the login works offline with demo data
   };
 
   return (
@@ -114,7 +114,12 @@ export default function Login() {
             <CheckCircle className="w-5 h-5 text-green-600" />
             <div>
               <h3 className="text-sm font-medium text-green-800">Login Successful!</h3>
-              <p className="text-sm text-green-600">Redirecting to dashboard...</p>
+              <p className="text-sm text-green-600">
+                {loginType === 'admin' 
+                  ? 'Redirecting to admin dashboard...' 
+                  : 'Redirecting to dashboard...'
+                }
+              </p>
             </div>
           </div>
         )}
@@ -161,25 +166,6 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Demo Login Buttons */}
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600 mb-3 text-center">Quick Demo Login:</p>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => handleDemoLogin('jobseeker')}
-                  className="flex-1 bg-blue-100 text-blue-700 py-2 px-3 rounded-md text-sm font-medium hover:bg-blue-200 transition-colors"
-                >
-                  Demo Job Seeker
-                </button>
-                <button
-                  onClick={() => handleDemoLogin('employer')}
-                  className="flex-1 bg-purple-100 text-purple-700 py-2 px-3 rounded-md text-sm font-medium hover:bg-purple-200 transition-colors"
-                >
-                  Demo Employer
-                </button>
-              </div>
-            </div>
-
             {/* Login Form */}
             <div className="space-y-6">
               {/* Email Field */}
@@ -194,7 +180,7 @@ export default function Login() {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black ${
                       errors.email ? 'border-red-500' : 'border-gray-300'
                     }`}
                     placeholder="Enter your email address"
@@ -220,7 +206,7 @@ export default function Login() {
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                    className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black ${
                       errors.password ? 'border-red-500' : 'border-gray-300'
                     }`}
                     placeholder="Enter your password"

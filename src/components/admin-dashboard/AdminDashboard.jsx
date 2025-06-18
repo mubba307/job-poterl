@@ -1,35 +1,51 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
 import { 
+  Eye, 
+  EyeOff, 
+  Mail, 
+  Lock, 
   Users, 
   Building2, 
   Calendar, 
+  MapPin, 
+  Phone, 
+  Briefcase,
+  User,
   LogOut,
   Search,
   Filter,
   ChevronDown,
-  ChevronUp,
-  Eye,
-  Edit,
-  Trash2,
-  Shield
+  ChevronUp
 } from 'lucide-react';
 
-export default function AdminDashboard() {
-  const router = useRouter();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
+const AdminDashboard = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   
   // Dashboard data
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
+  
+  // Search and filters
   const [searchQuery, setSearchQuery] = useState('');
   const [userTypeFilter, setUserTypeFilter] = useState('');
+  const [experienceFilter, setExperienceFilter] = useState('');
+  const [industryFilter, setIndustryFilter] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  
+  // Login form
+  const [loginForm, setLoginForm] = useState({
+    email: '',
+    password: ''
+  });
 
-  // Demo user data for admin view
+  // Demo user data for offline functionality
   const demoUsers = [
     {
       id: 1,
@@ -111,37 +127,25 @@ export default function AdminDashboard() {
     recentUsers: 2
   };
 
-  useEffect(() => {
-    // Check if admin token exists
-    const adminToken = localStorage.getItem('adminToken');
-    const isAdminUser = localStorage.getItem('isAdmin');
-    const userType = localStorage.getItem('userType');
-    
-    console.log('Admin dashboard checking authentication:', {
-      adminToken,
-      isAdminUser,
-      userType,
-      hasAdminToken: !!adminToken,
-      isAdminUserTrue: isAdminUser === 'true',
-      isUserTypeAdmin: userType === 'admin'
-    });
-    
-    if (adminToken && isAdminUser === 'true' && userType === 'admin') {
-      console.log('Admin authentication successful, loading dashboard...');
-      setIsAdmin(true);
+  // Login function
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    // Check for admin credentials
+    if (loginForm.email === 'admine@gmail.com' && loginForm.password === 'test1234') {
+      setIsLoggedIn(true);
+      localStorage.setItem('adminToken', 'admin_token_' + Date.now());
       loadDashboard();
     } else {
-      console.log('Admin authentication failed, redirecting to login...');
-      // Clear any invalid data
-      localStorage.removeItem('adminToken');
-      localStorage.removeItem('isAdmin');
-      localStorage.removeItem('userType');
-      // Redirect to main login page
-      router.push('/loginme');
+      setError('Invalid admin credentials. Access denied.');
     }
+    
     setLoading(false);
-  }, [router]);
+  };
 
+  // Load dashboard data
   const loadDashboard = async () => {
     try {
       // Simulate API call delay
@@ -149,6 +153,8 @@ export default function AdminDashboard() {
       
       setStats(demoStats);
       setUsers(demoUsers);
+      setTotalUsers(demoUsers.length);
+      setTotalPages(1);
     } catch (error) {
       setError('Failed to load dashboard data');
       console.error('Dashboard load error:', error);
@@ -161,61 +167,145 @@ export default function AdminDashboard() {
                          user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          user.skills.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = !userTypeFilter || user.userType === userTypeFilter;
+    const matchesExperience = !experienceFilter || user.experience === experienceFilter;
+    const matchesIndustry = !industryFilter || user.industry === industryFilter;
     
-    return matchesSearch && matchesType;
+    return matchesSearch && matchesType && matchesExperience && matchesIndustry;
   });
 
   // Clear filters
   const clearFilters = () => {
     setSearchQuery('');
     setUserTypeFilter('');
+    setExperienceFilter('');
+    setIndustryFilter('');
   };
 
   // Logout
   const handleLogout = () => {
+    setIsLoggedIn(false);
+    setStats(null);
+    setUsers([]);
+    setError('');
     localStorage.removeItem('adminToken');
-    localStorage.removeItem('isAdmin');
-    localStorage.removeItem('userType');
-    router.push('/loginme');
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading admin dashboard...</p>
-        </div>
-      </div>
-    );
-  }
+  // Check for existing token on component mount
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    if (token) {
+      setIsLoggedIn(true);
+      loadDashboard();
+    }
+  }, []);
 
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            <strong className="font-bold">Access Denied!</strong>
-            <span className="block sm:inline"> Invalid admin credentials. Redirecting to login...</span>
+  // Login Form Component
+  const LoginForm = () => (
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-purple-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-red-600 to-purple-600 px-8 py-6 text-center">
+            <h1 className="text-3xl font-bold text-white">🔐 Admin Access</h1>
+            <p className="text-red-100 mt-2">Restricted Area - Admin Only</p>
           </div>
-          <p className="text-gray-600">Please log in with valid admin credentials.</p>
+
+          <div className="p-8">
+            <form onSubmit={handleLogin} className="space-y-6">
+              {/* Email Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Admin Email
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                  <input
+                    type="email"
+                    value={loginForm.email}
+                    onChange={(e) => setLoginForm({...loginForm, email: e.target.value})}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-black"
+                    placeholder="Enter admin email"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Password Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Admin Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={loginForm.password}
+                    onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all text-black"
+                    placeholder="Enter admin password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Login Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-red-600 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold text-lg hover:from-red-700 hover:to-purple-700 focus:ring-4 focus:ring-red-200 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Authenticating...</span>
+                  </div>
+                ) : (
+                  '🔐 Admin Login'
+                )}
+              </button>
+            </form>
+            
+            {error && (
+              <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex items-center space-x-2 text-red-600">
+                  <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <span className="text-sm font-medium">{error}</span>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800 text-center">
+                <strong>⚠️ Restricted Access:</strong> This area is only accessible to authorized administrators.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
 
-  return (
+  // Dashboard Component
+  const Dashboard = () => (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-3">
-              <Shield className="w-8 h-8 text-red-600" />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">🔐 JobPortal Admin Dashboard</h1>
-                <p className="text-gray-600">Manage and view all user registrations</p>
-              </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">🔐 JobPortal Admin Dashboard</h1>
+              <p className="text-gray-600">Manage and view all user registrations</p>
             </div>
             <button 
               onClick={handleLogout}
@@ -246,7 +336,7 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-green-100 rounded-lg">
-                  <Users className="w-6 h-6 text-green-600" />
+                  <User className="w-6 h-6 text-green-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Jobseekers</p>
@@ -330,6 +420,31 @@ export default function AdminDashboard() {
                     <option value="jobseeker">Jobseekers</option>
                     <option value="employer">Employers</option>
                   </select>
+                  <select
+                    value={experienceFilter}
+                    onChange={(e) => setExperienceFilter(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent text-black"
+                  >
+                    <option value="">All Experience</option>
+                    <option value="Entry Level">Entry Level</option>
+                    <option value="Mid Level">Mid Level</option>
+                    <option value="Senior Level">Senior Level</option>
+                    <option value="Executive">Executive</option>
+                  </select>
+                  <select
+                    value={industryFilter}
+                    onChange={(e) => setIndustryFilter(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent text-black"
+                  >
+                    <option value="">All Industries</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Healthcare">Healthcare</option>
+                    <option value="Finance">Finance</option>
+                    <option value="Education">Education</option>
+                    <option value="Retail">Retail</option>
+                    <option value="Manufacturing">Manufacturing</option>
+                    <option value="Other">Other</option>
+                  </select>
                 </div>
               </div>
             )}
@@ -366,14 +481,17 @@ export default function AdminDashboard() {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                       <div className="flex items-center space-x-2">
-                        <span className="text-gray-600"><strong>Phone:</strong> {user.phone}</span>
+                        <Phone className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-600">{user.phone}</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <span className="text-gray-600"><strong>Location:</strong> {user.location}</span>
+                        <MapPin className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-600">{user.location}</span>
                       </div>
                       {user.experience && (
                         <div className="flex items-center space-x-2">
-                          <span className="text-gray-600"><strong>Experience:</strong> {user.experience}</span>
+                          <Briefcase className="w-4 h-4 text-gray-400" />
+                          <span className="text-gray-600">{user.experience}</span>
                         </div>
                       )}
                       {user.skills && (
@@ -383,7 +501,8 @@ export default function AdminDashboard() {
                       )}
                       {user.company && (
                         <div className="flex items-center space-x-2">
-                          <span className="text-gray-600"><strong>Company:</strong> {user.company}</span>
+                          <Building2 className="w-4 h-4 text-gray-400" />
+                          <span className="text-gray-600">{user.company}</span>
                         </div>
                       )}
                       {user.industry && (
@@ -395,21 +514,9 @@ export default function AdminDashboard() {
                         <span className="text-gray-600"><strong>Role:</strong> {user.role}</span>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <span className="text-gray-600"><strong>Joined:</strong> {new Date(user.createdAt).toLocaleDateString()}</span>
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-600">Joined: {new Date(user.createdAt).toLocaleDateString()}</span>
                       </div>
-                    </div>
-
-                    {/* Admin Actions */}
-                    <div className="mt-4 flex items-center space-x-2">
-                      <button className="p-2 text-gray-400 hover:text-blue-600">
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 text-gray-400 hover:text-yellow-600">
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button className="p-2 text-gray-400 hover:text-red-600">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
                     </div>
                   </div>
                 ))}
@@ -420,4 +527,12 @@ export default function AdminDashboard() {
       </div>
     </div>
   );
-}
+
+  return (
+    <div className="admin-dashboard">
+      {isLoggedIn ? <Dashboard /> : <LoginForm />}
+    </div>
+  );
+};
+
+export default AdminDashboard; 
