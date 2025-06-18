@@ -1,7 +1,6 @@
 'use client';
-import Signup from '@/components/signup/signup';
+import AdvancedJobPortalHero from '@/components/home/hero/hero';
 
 export default function HomePage() {
-  // Always show signup page on homepage
-  return <Signup />;
+  return <AdvancedJobPortalHero />;
 }
