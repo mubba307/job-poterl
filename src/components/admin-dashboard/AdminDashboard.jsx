@@ -16,7 +16,10 @@ import {
   Search,
   Filter,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Clock,
+  Activity,
+  Login
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -45,24 +48,32 @@ const AdminDashboard = () => {
     password: ''
   });
 
-  // Demo user data for offline functionality
+  // Demo user data for offline functionality with login details
   const demoUsers = [
     {
-      id: 1,
+      id: '507f1f77bcf86cd799439011',
       fullName: "John Doe",
       email: "john.doe@example.com",
       phone: "123-456-7890",
       location: "San Francisco, CA",
       userType: "jobseeker",
-      experience: "Mid Level",
+      experience: "mid",
       skills: "React, Node.js, TypeScript",
       company: "",
       industry: "",
       role: "Software Developer",
-      createdAt: "2024-01-15"
+      createdAt: "2024-01-15",
+      lastLogin: "2024-01-20T10:30:00Z",
+      loginCount: 15,
+      isOnline: false,
+      loginHistory: [
+        { date: "2024-01-20T10:30:00Z", ip: "192.168.1.100", device: "Chrome on Windows" },
+        { date: "2024-01-19T14:20:00Z", ip: "192.168.1.100", device: "Chrome on Windows" },
+        { date: "2024-01-18T09:15:00Z", ip: "192.168.1.100", device: "Mobile Safari" }
+      ]
     },
     {
-      id: 2,
+      id: '507f1f77bcf86cd799439012',
       fullName: "Jane Smith",
       email: "jane.smith@techcorp.com",
       phone: "234-567-8901",
@@ -71,26 +82,42 @@ const AdminDashboard = () => {
       experience: "",
       skills: "",
       company: "TechCorp Solutions",
-      industry: "Technology",
+      industry: "technology",
       role: "HR Manager",
-      createdAt: "2024-01-14"
+      createdAt: "2024-01-14",
+      lastLogin: "2024-01-20T08:45:00Z",
+      loginCount: 8,
+      isOnline: true,
+      loginHistory: [
+        { date: "2024-01-20T08:45:00Z", ip: "10.0.0.50", device: "Firefox on Mac" },
+        { date: "2024-01-19T16:30:00Z", ip: "10.0.0.50", device: "Firefox on Mac" },
+        { date: "2024-01-18T11:20:00Z", ip: "10.0.0.50", device: "Firefox on Mac" }
+      ]
     },
     {
-      id: 3,
+      id: '507f1f77bcf86cd799439013',
       fullName: "Mike Johnson",
       email: "mike.johnson@example.com",
       phone: "345-678-9012",
       location: "Austin, TX",
       userType: "jobseeker",
-      experience: "Senior Level",
+      experience: "senior",
       skills: "Python, Machine Learning, AWS",
       company: "",
       industry: "",
       role: "Data Scientist",
-      createdAt: "2024-01-13"
+      createdAt: "2024-01-13",
+      lastLogin: "2024-01-19T17:10:00Z",
+      loginCount: 12,
+      isOnline: false,
+      loginHistory: [
+        { date: "2024-01-19T17:10:00Z", ip: "172.16.0.25", device: "Chrome on Linux" },
+        { date: "2024-01-18T13:45:00Z", ip: "172.16.0.25", device: "Chrome on Linux" },
+        { date: "2024-01-17T10:30:00Z", ip: "172.16.0.25", device: "Chrome on Linux" }
+      ]
     },
     {
-      id: 4,
+      id: '507f1f77bcf86cd799439014',
       fullName: "Sarah Wilson",
       email: "sarah.wilson@healthtech.com",
       phone: "456-789-0123",
@@ -99,33 +126,54 @@ const AdminDashboard = () => {
       experience: "",
       skills: "",
       company: "HealthTech Solutions",
-      industry: "Healthcare",
+      industry: "healthcare",
       role: "Recruitment Specialist",
-      createdAt: "2024-01-12"
+      createdAt: "2024-01-12",
+      lastLogin: "2024-01-20T12:00:00Z",
+      loginCount: 6,
+      isOnline: true,
+      loginHistory: [
+        { date: "2024-01-20T12:00:00Z", ip: "203.0.113.10", device: "Safari on Mac" },
+        { date: "2024-01-19T09:15:00Z", ip: "203.0.113.10", device: "Safari on Mac" },
+        { date: "2024-01-18T14:30:00Z", ip: "203.0.113.10", device: "Safari on Mac" }
+      ]
     },
     {
-      id: 5,
+      id: '507f1f77bcf86cd799439015',
       fullName: "David Brown",
       email: "david.brown@example.com",
       phone: "567-890-1234",
       location: "Chicago, IL",
       userType: "jobseeker",
-      experience: "Entry Level",
+      experience: "entry",
       skills: "JavaScript, HTML, CSS",
       company: "",
       industry: "",
       role: "Frontend Developer",
-      createdAt: "2024-01-11"
+      createdAt: "2024-01-11",
+      lastLogin: "2024-01-18T15:20:00Z",
+      loginCount: 3,
+      isOnline: false,
+      loginHistory: [
+        { date: "2024-01-18T15:20:00Z", ip: "198.51.100.75", device: "Edge on Windows" },
+        { date: "2024-01-17T11:45:00Z", ip: "198.51.100.75", device: "Edge on Windows" },
+        { date: "2024-01-16T16:10:00Z", ip: "198.51.100.75", device: "Edge on Windows" }
+      ]
     }
   ];
 
-  // Demo stats
+  // Demo stats with login information
   const demoStats = {
     totalUsers: 5,
     jobseekers: 3,
     employers: 2,
-    recentUsers: 2
+    recentUsers: 2,
+    onlineUsers: 2,
+    totalLogins: 44
   };
+
+  // API base URL
+  const API_BASE_URL = 'http://localhost:5000/api';
 
   // Login function
   const handleLogin = async (e) => {
@@ -133,13 +181,42 @@ const AdminDashboard = () => {
     setLoading(true);
     setError('');
 
-    // Check for admin credentials
-    if (loginForm.email === 'admine@gmail.com' && loginForm.password === 'test1234') {
-      setIsLoggedIn(true);
-      localStorage.setItem('adminToken', 'admin_token_' + Date.now());
-      loadDashboard();
-    } else {
-      setError('Invalid admin credentials. Access denied.');
+    try {
+      // Try to login via API first
+      const response = await fetch(`${API_BASE_URL}/admin/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(loginForm)
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setIsLoggedIn(true);
+        localStorage.setItem('adminToken', data.token);
+        loadDashboard();
+      } else {
+        // Fallback to hardcoded credentials
+        if (loginForm.email === 'admine@gmail.com' && loginForm.password === 'test1234') {
+          setIsLoggedIn(true);
+          localStorage.setItem('adminToken', 'admin_token_' + Date.now());
+          loadDashboard();
+        } else {
+          setError(data.error || 'Invalid admin credentials. Access denied.');
+        }
+      }
+    } catch (error) {
+      console.error('Admin login error:', error);
+      // Fallback to hardcoded credentials for demo
+      if (loginForm.email === 'admine@gmail.com' && loginForm.password === 'test1234') {
+        setIsLoggedIn(true);
+        localStorage.setItem('adminToken', 'admin_token_' + Date.now());
+        loadDashboard();
+      } else {
+        setError('Invalid admin credentials. Access denied.');
+      }
     }
     
     setLoading(false);
@@ -148,16 +225,106 @@ const AdminDashboard = () => {
   // Load dashboard data
   const loadDashboard = async () => {
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const token = localStorage.getItem('adminToken');
       
+      if (!token) {
+        throw new Error('No admin token found');
+      }
+
+      // Try to load from API
+      try {
+        const [statsResponse, usersResponse] = await Promise.all([
+          fetch(`${API_BASE_URL}/admin/dashboard`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            }
+          }),
+          fetch(`${API_BASE_URL}/admin/users`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            }
+          })
+        ]);
+
+        if (statsResponse.ok && usersResponse.ok) {
+          const statsData = await statsResponse.json();
+          const usersData = await usersResponse.json();
+
+          setStats(statsData.stats);
+          setUsers(usersData.users);
+          setTotalUsers(usersData.pagination.totalUsers);
+          setTotalPages(usersData.pagination.totalPages);
+        } else {
+          throw new Error('API request failed');
+        }
+      } catch (apiError) {
+        console.log('API not available, using demo data:', apiError);
+        // Fallback to demo data
+        setStats(demoStats);
+        setUsers(demoUsers);
+        setTotalUsers(demoUsers.length);
+        setTotalPages(1);
+      }
+    } catch (error) {
+      setError('Failed to load dashboard data');
+      console.error('Dashboard load error:', error);
+      // Fallback to demo data
       setStats(demoStats);
       setUsers(demoUsers);
       setTotalUsers(demoUsers.length);
       setTotalPages(1);
+    }
+  };
+
+  // Search users
+  const searchUsers = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      
+      if (!token) {
+        throw new Error('No admin token found');
+      }
+
+      const params = new URLSearchParams();
+      if (searchQuery) params.append('query', searchQuery);
+      if (userTypeFilter) params.append('userType', userTypeFilter);
+      if (experienceFilter) params.append('experience', experienceFilter);
+      if (industryFilter) params.append('industry', industryFilter);
+
+      const response = await fetch(`${API_BASE_URL}/admin/users/search?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data.users);
+        setTotalUsers(data.pagination.totalUsers);
+        setTotalPages(data.pagination.totalPages);
+      } else {
+        throw new Error('Search failed');
+      }
     } catch (error) {
-      setError('Failed to load dashboard data');
-      console.error('Dashboard load error:', error);
+      console.log('Search API not available, using local filter:', error);
+      // Fallback to local filtering
+      const filteredUsers = demoUsers.filter(user => {
+        const matchesSearch = user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                             user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                             user.skills.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesType = !userTypeFilter || user.userType === userTypeFilter;
+        const matchesExperience = !experienceFilter || user.experience === experienceFilter;
+        const matchesIndustry = !industryFilter || user.industry === industryFilter;
+        
+        return matchesSearch && matchesType && matchesExperience && matchesIndustry;
+      });
+      
+      setUsers(filteredUsers);
+      setTotalUsers(filteredUsers.length);
+      setTotalPages(1);
     }
   };
 
@@ -179,6 +346,7 @@ const AdminDashboard = () => {
     setUserTypeFilter('');
     setExperienceFilter('');
     setIndustryFilter('');
+    loadDashboard(); // Reload original data
   };
 
   // Logout
@@ -198,6 +366,13 @@ const AdminDashboard = () => {
       loadDashboard();
     }
   }, []);
+
+  // Search effect
+  useEffect(() => {
+    if (isLoggedIn && (searchQuery || userTypeFilter || experienceFilter || industryFilter)) {
+      searchUsers();
+    }
+  }, [searchQuery, userTypeFilter, experienceFilter, industryFilter]);
 
   // Login Form Component
   const LoginForm = () => (
@@ -321,7 +496,7 @@ const AdminDashboard = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Grid */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-6 mb-8">
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-blue-100 rounded-lg">
@@ -363,6 +538,28 @@ const AdminDashboard = () => {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Recent (7 days)</p>
                   <p className="text-2xl font-bold text-gray-900">{stats.recentUsers}</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-emerald-100 rounded-lg">
+                  <Activity className="w-6 h-6 text-emerald-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Online Now</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.onlineUsers || 0}</p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-indigo-100 rounded-lg">
+                  <Login className="w-6 h-6 text-indigo-600" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Logins</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.totalLogins || 0}</p>
                 </div>
               </div>
             </div>
@@ -426,10 +623,10 @@ const AdminDashboard = () => {
                     className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent text-black"
                   >
                     <option value="">All Experience</option>
-                    <option value="Entry Level">Entry Level</option>
-                    <option value="Mid Level">Mid Level</option>
-                    <option value="Senior Level">Senior Level</option>
-                    <option value="Executive">Executive</option>
+                    <option value="entry">Entry Level</option>
+                    <option value="mid">Mid Level</option>
+                    <option value="senior">Senior Level</option>
+                    <option value="executive">Executive</option>
                   </select>
                   <select
                     value={industryFilter}
@@ -437,13 +634,13 @@ const AdminDashboard = () => {
                     className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent text-black"
                   >
                     <option value="">All Industries</option>
-                    <option value="Technology">Technology</option>
-                    <option value="Healthcare">Healthcare</option>
-                    <option value="Finance">Finance</option>
-                    <option value="Education">Education</option>
-                    <option value="Retail">Retail</option>
-                    <option value="Manufacturing">Manufacturing</option>
-                    <option value="Other">Other</option>
+                    <option value="technology">Technology</option>
+                    <option value="healthcare">Healthcare</option>
+                    <option value="finance">Finance</option>
+                    <option value="education">Education</option>
+                    <option value="retail">Retail</option>
+                    <option value="manufacturing">Manufacturing</option>
+                    <option value="other">Other</option>
                   </select>
                 </div>
               </div>

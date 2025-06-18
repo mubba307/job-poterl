@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Search, MapPin, Briefcase, Building, Users, TrendingUp, Star, ChevronDown, Filter, Bell, Upload, ExternalLink, Heart, Clock, DollarSign, ArrowRight, Eye, Zap, Target, Award, MessageCircle, Video, FileText, Calendar, Send, Bookmark, Share2, AlertTriangle, CheckCircle, Play, BarChart3, Globe, Shield, Sparkles, Phone, Mail, LinkedIn, Twitter, Facebook, Instagram, ChevronRight, Plus, Minus, RefreshCw, Settings, User, CreditCard, HelpCircle, X, Rocket, Lightbulb, GraduationCap, Code2, Palette, Megaphone } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export default function AdvancedJobPortalHero() {
   const [jobTitle, setJobTitle] = useState('')
@@ -25,6 +26,8 @@ export default function AdvancedJobPortalHero() {
   const [showJobDetails, setShowJobDetails] = useState(null)
   const [animateStats, setAnimateStats] = useState(false)
   const [hoveredJob, setHoveredJob] = useState(null)
+
+  const router = useRouter()
 
   // Enhanced job categories with more details
   const enhancedCategories = [
@@ -256,14 +259,14 @@ export default function AdvancedJobPortalHero() {
       features: ['ATS Optimization', 'Professional Templates', 'Real-time Preview']
     },
     {
-      title: 'Interview Prep',
-      description: 'Practice with AI-powered mock interviews',
+      title: 'Video Interview',
+      description: 'Direct video interview with built-in calling',
       icon: Video,
-      action: 'Start Practice',
+      action: 'Start Interview',
       popular: true,
-      link: '/interview-prep',
+      link: '/interview',
       color: 'from-purple-500 to-purple-600',
-      features: ['AI Mock Interviews', 'Feedback & Tips', 'Common Questions']
+      features: ['Direct Video Calling', 'WebRTC Technology', 'Interview Tools']
     },
     {
       title: 'Salary Calculator',
@@ -394,7 +397,7 @@ export default function AdvancedJobPortalHero() {
   }
 
   const handleVideoInterview = () => {
-    setShowVideoInterview(true)
+    router.push('/interview')
   }
 
   const calculateSalaryInsights = () => {
@@ -428,6 +431,13 @@ export default function AdvancedJobPortalHero() {
               <Building className="w-3 h-3" />
               Companies
             </button>
+            <Link 
+              href="/interview"
+              className="bg-white/20 hover:bg-white/30 px-2 md:px-3 py-1 rounded-full text-xs md:text-sm transition-colors flex items-center gap-1"
+            >
+              <Video className="w-3 h-3" />
+              Video Interview
+            </Link>
             <button 
               onClick={() => setShowSalaryCalculator(true)}
               className="bg-white/20 hover:bg-white/30 px-2 md:px-3 py-1 rounded-full text-xs md:text-sm transition-colors flex items-center gap-1"
