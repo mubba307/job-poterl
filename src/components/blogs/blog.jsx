@@ -142,12 +142,12 @@ export default function Blog() {
   };
 
   return (
-    <section className="max-w-3xl mx-auto py-10 px-4">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-3xl font-bold text-blue-900">Job Portal Blog</h2>
+    <section className="max-w-xs sm:max-w-3xl mx-auto py-8 sm:py-10 px-2 sm:px-4 animate-fade-in glass rounded-2xl shadow-xl">
+      <div className="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4">
+        <h2 className="text-2xl sm:text-3xl font-bold text-blue-900 animate-slide-down">Job Portal Blog</h2>
         <button
           onClick={() => setShowForm((v) => !v)}
-          className="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800 transition"
+          className="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800 transition font-semibold shadow animate-bounce w-full sm:w-auto"
         >
           {showForm ? "Close" : "Add Post"}
         </button>
@@ -157,16 +157,16 @@ export default function Blog() {
       {showForm && (
         <form
           onSubmit={handleAddPost}
-          className="bg-blue-50 rounded-xl shadow p-6 mb-10 space-y-4"
+          className="bg-blue-50 rounded-xl shadow p-4 sm:p-6 mb-10 space-y-4 animate-fade-in-slow"
         >
-          <h3 className="text-xl font-semibold text-blue-800 mb-2">Add New Blog Post</h3>
+          <h3 className="text-lg sm:text-xl font-semibold text-blue-800 mb-2">Add New Blog Post</h3>
           <input
             type="text"
             name="title"
             placeholder="Title"
             value={newPost.title}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 rounded border border-gray-300"
+            className="w-full px-3 py-2 rounded border border-gray-300 text-sm sm:text-base"
             required
           />
           <input
@@ -175,7 +175,7 @@ export default function Blog() {
             placeholder="Summary"
             value={newPost.summary}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 rounded border border-gray-300"
+            className="w-full px-3 py-2 rounded border border-gray-300 text-sm sm:text-base"
             required
           />
           <input
@@ -184,7 +184,7 @@ export default function Blog() {
             placeholder="Author"
             value={newPost.author}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 rounded border border-gray-300"
+            className="w-full px-3 py-2 rounded border border-gray-300 text-sm sm:text-base"
             required
           />
           <input
@@ -193,74 +193,66 @@ export default function Blog() {
             placeholder="Image URL (optional)"
             value={newPost.image}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 rounded border border-gray-300"
+            className="w-full px-3 py-2 rounded border border-gray-300 text-sm sm:text-base"
           />
           <textarea
             name="content"
             placeholder="Content"
             value={newPost.content}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 rounded border border-gray-300"
+            className="w-full px-3 py-2 rounded border border-gray-300 text-sm sm:text-base"
             rows={4}
             required
           />
-          <button
-            type="submit"
-            className="bg-blue-700 text-white px-6 py-2 rounded hover:bg-blue-800 transition"
-            disabled={loading}
-          >
-            {loading ? "Posting..." : "Add Post"}
+          <button type="submit" className="w-full py-2 rounded bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold shadow hover:scale-105 hover:shadow-2xl transition-all duration-300 animate-bounce disabled:opacity-60 disabled:cursor-not-allowed">
+            Add Post
           </button>
-          {error && <div className="text-red-600 text-sm">{error}</div>}
         </form>
       )}
 
-      {/* Blog Posts List */}
-      {loading ? (
-        <div className="text-center text-blue-700">Loading...</div>
-      ) : error ? (
-        <div className="text-center text-red-600">{error}</div>
-      ) : (
-        <div className="space-y-8">
-          {posts.map((post) => (
-            <div key={post.id} className="bg-white rounded-xl shadow p-6 flex flex-col md:flex-row gap-6">
+      {/* Blog Posts */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        {loading ? (
+          <div className="col-span-full text-center text-blue-700 animate-pulse">Loading...</div>
+        ) : error ? (
+          <div className="col-span-full text-center text-red-600 animate-fade-in">{error}</div>
+        ) : posts.length === 0 ? (
+          <div className="col-span-full text-center text-gray-500 animate-fade-in">No blog posts yet.</div>
+        ) : (
+          posts.map((post) => (
+            <div key={post.id} className="bg-white/90 rounded-xl shadow-lg p-4 flex flex-col gap-2 animate-fade-in-slow glass hover:scale-105 transition-transform duration-300 cursor-pointer">
               {post.image && (
-                <img
-                  src={post.image}
-                  alt={post.title}
-                  className="w-full md:w-40 h-40 object-cover rounded-lg mb-4 md:mb-0"
-                />
+                <img src={post.image} alt={post.title} className="w-full h-40 object-cover rounded-lg mb-2" />
               )}
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-2xl font-semibold text-blue-800 mb-2">{post.title}</h3>
-                  <button
-                    onClick={() => handleDelete(post.id)}
-                    className="text-red-600 hover:underline text-sm"
-                    title="Delete Post"
-                  >
-                    Delete
-                  </button>
-                </div>
-                <div className="flex items-center gap-4 mb-2">
-                  <span className="text-gray-500 text-sm">{post.date}</span>
-                  <span className="text-gray-500 text-sm">By {post.author}</span>
-                </div>
-                <p className="text-gray-700 mb-3">{post.summary}</p>
-                <button
-                  onClick={() => handleExpand(post.id)}
-                  className="text-blue-600 underline text-sm mb-2"
-                >
-                  {expandedPost === post.id ? "Hide Details" : "Read More"}
+              <h3 className="text-lg sm:text-xl font-bold text-blue-800 mb-1 line-clamp-2">{post.title}</h3>
+              <p className="text-gray-700 text-sm sm:text-base line-clamp-2 mb-1">{post.summary}</p>
+              <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                <User className="w-4 h-4" /> {post.author} <Calendar className="w-4 h-4 ml-2" /> {post.date}
+              </div>
+              <button onClick={() => handleExpand(post.id)} className="text-blue-600 hover:underline text-xs font-semibold self-start animate-bounce">
+                {expandedPost === post.id ? 'Hide Details' : 'Read More'}
+              </button>
+              {expandedPost === post.id && (
+                <div className="text-gray-800 text-sm sm:text-base animate-fade-in-slow mt-2 mb-1">{post.content}</div>
+              )}
+              <div className="flex gap-2 mt-auto">
+                <button onClick={() => handleDelete(post.id)} className="p-2 rounded-full bg-red-100 text-red-600 hover:bg-red-200 transition animate-bounce" aria-label="Delete Post">
+                  <Trash className="w-4 h-4" />
                 </button>
-                {expandedPost === post.id && (
-                  <div className="mt-2 text-gray-800">{post.content}</div>
-                )}
+                <button className="p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition animate-bounce" aria-label="Like Post">
+                  <Heart className="w-4 h-4" />
+                </button>
+                <button className="p-2 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 transition animate-bounce" aria-label="Comment">
+                  <MessageCircle className="w-4 h-4" />
+                </button>
+                <button className="p-2 rounded-full bg-green-100 text-green-600 hover:bg-green-200 transition animate-bounce" aria-label="Share">
+                  <Share2 className="w-4 h-4" />
+                </button>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
     </section>
   );
 }

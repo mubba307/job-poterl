@@ -2,70 +2,133 @@
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 
 // Mock JobCard component since it's imported
-const JobCard = ({ job }) => (
-  <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-blue-500 hover:shadow-xl transition-shadow duration-300 w-[380px] h-[420px] flex flex-col">
-    <div className="flex items-start justify-between mb-4">
-      <div className="flex items-center space-x-3 flex-1 min-w-0">
-        <img src={job.logo} alt={job.company} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
-        <div className="min-w-0 flex-1">
-          <h3 className="font-bold text-lg text-gray-900 truncate">{job.title}</h3>
-          <p className="text-gray-600 truncate">{job.company}</p>
+const JobCard = ({ job, userId }) => {
+  const [showSignupModal, setShowSignupModal] = useState(false);
+  const userIdFromContextOrAPI = userId;
+  const companyEmail = job.companyEmail || "company@example.com";
+
+  async function handleApply() {
+    const token = typeof window !== "undefined" ? localStorage.getItem('token') : null;
+    if (!token) {
+      setShowSignupModal(true);
+      return;
+    }
+    try {
+      const response = await fetch('http://localhost:5000/api/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          userId: userIdFromContextOrAPI,
+          jobId: job.id,
+          companyEmail: companyEmail
+        })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        alert('Application sent! ' + data.message);
+      } else {
+        alert('Error: ' + data.message);
+      }
+    } catch (err) {
+      alert('Network error: ' + err.message);
+    }
+  }
+
+  return (
+    <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-blue-500 hover:shadow-xl transition-shadow duration-300 w-[380px] h-[420px] flex flex-col">
+      {/* Signup Modal */}
+      {showSignupModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full text-center">
+            <h2 className="text-2xl font-bold mb-4">Sign Up Required</h2>
+            <p className="mb-6">Please sign up or log in to apply for jobs.</p>
+            <button
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-semibold mb-2 w-full"
+              onClick={() => { setShowSignupModal(false); window.location.href = '/signup'; }}
+            >
+              Go to Signup
+            </button>
+            <button
+              className="bg-gray-300 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors duration-200 font-semibold w-full"
+              onClick={() => setShowSignupModal(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center space-x-3 flex-1 min-w-0">
+          <img src={job.logo} alt={job.company} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+          <div className="min-w-0 flex-1">
+            <h3 className="font-bold text-lg text-gray-900 truncate">{job.title}</h3>
+            <p className="text-gray-900 truncate">{job.company}</p>
+          </div>
+        </div>
+        <div className="flex flex-col gap-1 flex-shrink-0 ml-2">
+          {job.isUrgent && (
+            <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full font-medium whitespace-nowrap">
+              Urgent
+            </span>
+          )}
+          {job.isFeatured && (
+            <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full font-medium whitespace-nowrap">
+              Featured
+            </span>
+          )}
         </div>
       </div>
-      <div className="flex flex-col gap-1 flex-shrink-0 ml-2">
-        {job.isUrgent && (
-          <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full font-medium whitespace-nowrap">
-            Urgent
+      
+      <div className="space-y-2 mb-4 flex-shrink-0">
+        <div className="flex items-center text-sm text-gray-900">
+          <span className="mr-2 flex-shrink-0">📍</span>
+          <span className="truncate flex-1">{job.location}</span>
+          {job.isRemote && <span className="ml-2 bg-green-100 text-green-800 px-2 py-1 rounded text-xs flex-shrink-0">Remote</span>}
+        </div>
+        <div className="flex items-center text-sm text-gray-900">
+          <span className="mr-2 flex-shrink-0">💰</span>
+          <span className="truncate">{job.salary}</span>
+        </div>
+        <div className="flex items-center text-sm text-gray-900">
+          <span className="mr-2 flex-shrink-0">⏱</span>
+          <span className="truncate">{job.experience}</span>
+        </div>
+        <div className="flex items-center text-sm text-gray-900">
+          <span className="mr-2 flex-shrink-0">📅</span>
+          <span className="truncate">{job.datePosted}</span>
+        </div>
+      </div>
+      
+      <div className="flex-1 mb-4">
+        <p className="text-gray-900 text-sm line-clamp-4 h-20 overflow-hidden">{job.description}</p>
+      </div>
+      
+      <div className="flex flex-wrap gap-2 mb-4 h-16 overflow-hidden">
+        {job.skills.slice(0, 4).map((skill, index) => (
+          <span key={index} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded whitespace-nowrap">
+            {skill}
           </span>
-        )}
-        {job.isFeatured && (
-          <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full font-medium whitespace-nowrap">
-            Featured
-          </span>
+        ))}
+        {job.skills.length > 4 && (
+          <span className="text-gray-500 text-xs self-center">+{job.skills.length - 4} more</span>
         )}
       </div>
-    </div>
-    
-    <div className="space-y-2 mb-4 flex-shrink-0">
-      <div className="flex items-center text-sm text-gray-600">
-        <span className="mr-2 flex-shrink-0">📍</span>
-        <span className="truncate flex-1">{job.location}</span>
-        {job.isRemote && <span className="ml-2 bg-green-100 text-green-800 px-2 py-1 rounded text-xs flex-shrink-0">Remote</span>}
-      </div>
-      <div className="flex items-center text-sm text-gray-600">
-        <span className="mr-2 flex-shrink-0">💰</span>
-        <span className="truncate">{job.salary}</span>
-      </div>
-      <div className="flex items-center text-sm text-gray-600">
-        <span className="mr-2 flex-shrink-0">⏱</span>
-        <span className="truncate">{job.experience}</span>
-      </div>
-      <div className="flex items-center text-sm text-gray-600">
-        <span className="mr-2 flex-shrink-0">📅</span>
-        <span className="truncate">{job.datePosted}</span>
-      </div>
-    </div>
-    
-    <div className="flex-1 mb-4">
-      <p className="text-gray-700 text-sm line-clamp-4 h-20 overflow-hidden">{job.description}</p>
-    </div>
-    
-    <div className="flex flex-wrap gap-2 mb-4 h-16 overflow-hidden">
-      {job.skills.slice(0, 4).map((skill, index) => (
-        <span key={index} className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded whitespace-nowrap">
-          {skill}
+      
+      <div className="flex items-center space-x-2 mt-2">
+        <span className="bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded-full font-medium whitespace-nowrap">
+          {job.category}
         </span>
-      ))}
-      {job.skills.length > 4 && (
-        <span className="text-gray-500 text-xs self-center">+{job.skills.length - 4} more</span>
-      )}
+      </div>
+      
+      <button
+        className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 mt-auto"
+        onClick={handleApply}
+      >
+        Apply Now
+      </button>
     </div>
-    
-    <button className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 mt-auto">
-      Apply Now
-    </button>
-  </div>
-);
+  );
+};
 
 // Enhanced job data with more realistic examples
 const jobSections = [
@@ -149,6 +212,63 @@ const jobSections = [
         isUrgent: false,
         isFeatured: true,
         link: "#"
+      },
+      {
+        id: 'job-100',
+        title: 'Registered Nurse',
+        company: 'City Hospital',
+        logo: 'https://via.placeholder.com/60x60?text=CH',
+        location: 'Delhi, India',
+        type: 'Full Time',
+        isRemote: false,
+        salary: '₹4-6 LPA',
+        experience: '1-3 years',
+        datePosted: 'Today',
+        description: 'Provide patient care and support in a busy hospital environment.',
+        skills: ['Patient Care', 'Nursing', 'Communication'],
+        companyWebsite: 'https://cityhospital.com',
+        category: 'Healthcare',
+        isUrgent: false,
+        isFeatured: false,
+        link: '#'
+      },
+      {
+        id: 'job-101',
+        title: 'School Teacher',
+        company: 'Green Valley School',
+        logo: 'https://via.placeholder.com/60x60?text=GV',
+        location: 'Mumbai, India',
+        type: 'Full Time',
+        isRemote: false,
+        salary: '₹3-5 LPA',
+        experience: '2-5 years',
+        datePosted: 'Yesterday',
+        description: 'Teach and mentor students in a progressive school environment.',
+        skills: ['Teaching', 'Classroom Management', 'Subject Knowledge'],
+        companyWebsite: 'https://greenvalleyschool.com',
+        category: 'Education',
+        isUrgent: false,
+        isFeatured: false,
+        link: '#'
+      },
+      {
+        id: 'job-102',
+        title: 'Retail Store Manager',
+        company: 'ShopSmart',
+        logo: 'https://via.placeholder.com/60x60?text=SS',
+        location: 'Bangalore, India',
+        type: 'Full Time',
+        isRemote: false,
+        salary: '₹5-8 LPA',
+        experience: '3-6 years',
+        datePosted: '2 days ago',
+        description: 'Oversee daily operations and staff at a busy retail store.',
+        skills: ['Retail', 'Management', 'Customer Service'],
+        companyWebsite: 'https://shopsmart.com',
+        category: 'Retail',
+        isUrgent: false,
+        isFeatured: false,
+        link: '#'
       }
     ]
   },
@@ -430,6 +550,8 @@ export default function JobNewsletter() {
     });
   };
 
+  const userId = typeof window !== "undefined" ? localStorage.getItem('userId') : null;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Newsletter Header */}
@@ -439,10 +561,10 @@ export default function JobNewsletter() {
             <h1 className="text-4xl font-bold text-gray-900 mb-2">
               🚀 Career Opportunities Newsletter
             </h1>
-            <p className="text-xl text-gray-600 mb-4">
+            <p className="text-xl text-gray-900 mb-4">
               Your Weekly Dose of Amazing Job Opportunities
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-900">
               {getCurrentDate()} • Issue #247
             </p>
           </div>
@@ -499,58 +621,24 @@ export default function JobNewsletter() {
           <div className="text-center py-16">
             <div className="text-6xl mb-4">🔍</div>
             <h3 className="text-2xl font-bold text-gray-900 mb-2">No jobs found</h3>
-            <p className="text-gray-600">Try adjusting your search terms or filters</p>
+            <p className="text-gray-900">Try adjusting your search terms or filters</p>
           </div>
         ) : (
-          filteredSections.map((section) => (
-            <div key={section.id} className="mb-12">
-              {/* Section Header */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center space-x-3">
-                  <h2 className="text-3xl font-bold text-gray-900">{section.title}</h2>
-                  <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                    {section.jobs.length} {section.jobs.length === 1 ? 'job' : 'jobs'}
-                  </span>
-                </div>
-                <div className="text-sm text-gray-500 hidden md:block">
-                  ← Scroll to see more opportunities →
-                </div>
-              </div>
-
-              {/* Scrollable Job Cards */}
-              <div 
-                ref={el => scrollRefs.current[section.id] = el}
-                className="flex gap-4 sm:gap-6 overflow-x-auto pb-4 scrollbar-hide"
-                style={{
-                  scrollSnapType: 'x mandatory',
-                  scrollBehavior: 'smooth',
-                  WebkitOverflowScrolling: 'touch'
-                }}
-                onMouseEnter={() => {
-                  // Pause auto-scroll on hover
-                  if (scrollRefs.current[section.id]) {
-                    scrollRefs.current[section.id].style.animationPlayState = 'paused';
-                  }
-                }}
-                onMouseLeave={() => {
-                  // Resume auto-scroll on mouse leave
-                  if (scrollRefs.current[section.id]) {
-                    scrollRefs.current[section.id].style.animationPlayState = 'running';
-                  }
-                }}
-              >
-                {section.jobs.map((job, index) => (
-                  <div
-                    key={job.id || index}
-                    style={{ scrollSnapAlign: 'start' }}
-                    className="flex-shrink-0 w-[90vw] max-w-xs sm:w-[380px] sm:max-w-sm md:w-[380px] md:max-w-md"
-                  >
-                    <JobCard job={job} />
+          <section className="w-full max-w-xs sm:max-w-5xl mx-auto py-8 sm:py-12 px-2 sm:px-4 animate-fade-in glass rounded-2xl shadow-xl">
+            <h2 className="text-2xl sm:text-3xl font-bold text-blue-900 mb-8 text-center animate-slide-down">Explore Jobs</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredSections.map(section => (
+                <div key={section.id} className="col-span-full">
+                  <h3 className="text-xl sm:text-2xl font-semibold text-blue-800 mb-4 mt-8 animate-fade-in-slow">{section.title}</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {section.jobs.map(job => (
+                      <JobCard key={job.id} job={job} userId={userId} />
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          ))
+          </section>
         )}
 
         {/* Newsletter Footer */}
@@ -558,7 +646,7 @@ export default function JobNewsletter() {
           <h3 className="text-2xl font-bold text-gray-900 mb-4">
             📧 Stay Updated with Weekly Job Alerts!
           </h3>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-900 mb-6">
             Get the latest job opportunities delivered straight to your inbox every week
           </p>
           <div className="flex flex-col md:flex-row gap-4 max-w-md mx-auto">
@@ -571,7 +659,7 @@ export default function JobNewsletter() {
               Subscribe
             </button>
           </div>
-          <p className="text-xs text-gray-500 mt-4">
+          <p className="text-xs text-gray-900 mt-4">
             Unsubscribe anytime • Privacy policy • Weekly delivery
           </p>
         </div>

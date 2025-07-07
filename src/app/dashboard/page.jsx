@@ -6,6 +6,7 @@ import Hero from '@/components/home/hero/hero'
 import About from '@/components/about/about'
 import JobNewsletter from '@/components/joblist/joblist';
 import { JobCardList } from '@/components/jobcard/jobcard';
+import { RecommendedJobs } from '@/components';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -29,9 +30,9 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center glass p-10 rounded-2xl shadow-2xl animate-fade-in">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600 text-lg font-semibold animate-pulse">Loading...</p>
         </div>
       </div>
     );
@@ -43,12 +44,23 @@ export default function Dashboard() {
 
   // Show main homepage content if logged in
   return (
-    <div>
+    <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen animate-fade-in">
       <Navbar />  
-      <Hero />
-      <JobNewsletter/>
-      <JobCardList/>
-      <About />
+      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+        <Hero />
+        <div className="my-8 animate-slide-up">
+          <RecommendedJobs />
+        </div>
+        <div className="my-8 animate-slide-up">
+          <JobNewsletter/>
+        </div>
+        <div className="my-8 animate-slide-up">
+          <JobCardList/>
+        </div>
+        <div className="my-8 animate-slide-up">
+          <About />
+        </div>
+      </div>
     </div>
   );
 } 

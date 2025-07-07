@@ -205,7 +205,7 @@ export default function Resume() {
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+          <label className="block text-sm font-medium text-gray-900 mb-1">Full Name</label>
           <input
             type="text"
             name="name"
@@ -216,7 +216,7 @@ export default function Resume() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <label className="block text-sm font-medium text-gray-900 mb-1">Email</label>
           <input
             type="email"
             name="email"
@@ -227,7 +227,7 @@ export default function Resume() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+          <label className="block text-sm font-medium text-gray-900 mb-1">Phone</label>
           <input
             type="tel"
             name="phone"
@@ -238,7 +238,7 @@ export default function Resume() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+          <label className="block text-sm font-medium text-gray-900 mb-1">Location</label>
           <input
             type="text"
             name="location"
@@ -248,7 +248,7 @@ export default function Resume() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn</label>
+          <label className="block text-sm font-medium text-gray-900 mb-1">LinkedIn</label>
           <input
             type="url"
             name="linkedin"
@@ -258,7 +258,7 @@ export default function Resume() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">GitHub</label>
+          <label className="block text-sm font-medium text-gray-900 mb-1">GitHub</label>
           <input
             type="url"
             name="github"
@@ -269,7 +269,7 @@ export default function Resume() {
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Portfolio Website</label>
+        <label className="block text-sm font-medium text-gray-900 mb-1">Portfolio Website</label>
         <input
           type="url"
           name="portfolio"
@@ -279,7 +279,7 @@ export default function Resume() {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Professional Summary</label>
+        <label className="block text-sm font-medium text-gray-900 mb-1">Professional Summary</label>
         <textarea
           name="summary"
           value={form.summary}
@@ -306,7 +306,7 @@ export default function Resume() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {fields.map(field => (
               <div key={field.name} className={field.span ? "md:col-span-2" : ""}>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-900 mb-1">
                   {field.label}
                 </label>
                 {field.type === "textarea" ? (
@@ -363,7 +363,7 @@ export default function Resume() {
       {resume.summary && (
         <div className="mb-6">
           <h2 className={`text-xl font-semibold text-${currentTemplate.color}-800 mb-2 border-b border-gray-200 pb-1`}>Summary</h2>
-          <p className="text-gray-700">{resume.summary}</p>
+          <p className="text-gray-900 font-bold">{resume.summary}</p>
         </div>
       )}
 
@@ -373,11 +373,11 @@ export default function Resume() {
           {resume.experience.map((exp, index) => (
             <div key={index} className="mb-4">
               <div className="flex justify-between items-start mb-1">
-                <h3 className="font-semibold text-gray-800">{exp.position}</h3>
+                <h3 className="font-semibold text-gray-900">{exp.position}</h3>
                 <span className="text-sm text-gray-600">{exp.duration}</span>
               </div>
-              <p className={`text-${currentTemplate.color}-600 mb-2`}>{exp.company}</p>
-              <p className="text-gray-700 text-sm">{exp.description}</p>
+              <p className={`text-${currentTemplate.color}-600 font-bold mb-2`}>{exp.company}</p>
+              <p className="text-gray-900 text-sm">{exp.description}</p>
             </div>
           ))}
         </div>
@@ -390,8 +390,8 @@ export default function Resume() {
             <div key={index} className="mb-3">
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-semibold text-gray-800">{edu.degree}</h3>
-                  <p className={`text-${currentTemplate.color}-600`}>{edu.institution}</p>
+                  <h3 className="font-semibold text-gray-900">{edu.degree}</h3>
+                  <p className={`text-${currentTemplate.color}-600 font-bold`}>{edu.institution}</p>
                 </div>
                 <div className="text-right text-sm text-gray-600">
                   <p>{edu.year}</p>
@@ -408,8 +408,8 @@ export default function Resume() {
           <h2 className={`text-xl font-semibold text-${currentTemplate.color}-800 mb-3 border-b border-gray-200 pb-1`}>Skills</h2>
           {resume.skills.map((skill, index) => (
             <div key={index} className="mb-2">
-              <span className="font-medium text-gray-800">{skill.category}:</span>
-              <span className="ml-2 text-gray-700">{skill.items}</span>
+              <span className="font-medium text-gray-900">{skill.category}:</span>
+              <span className="ml-2 text-gray-900 font-bold">{skill.items}</span>
             </div>
           ))}
         </div>

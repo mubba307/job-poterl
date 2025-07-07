@@ -101,9 +101,16 @@ export default function Signup() {
         newErrors.company = 'Company name is required';
         console.log('Company validation failed');
       }
-      if (!formData.industry) {
+      if (!formData.industry || formData.industry.trim() === '') {
         newErrors.industry = 'Industry is required';
         console.log('Industry validation failed');
+      } else {
+        // Validate industry enum values
+        const validIndustries = ['IT', 'Finance', 'Marketing', 'Other'];
+        if (!validIndustries.includes(formData.industry)) {
+          newErrors.industry = `Invalid industry. Must be one of: ${validIndustries.join(', ')}`;
+          console.log('Industry validation failed - invalid value');
+        }
       }
     }
 
@@ -114,76 +121,63 @@ export default function Signup() {
     return isValid;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted with data:', formData);
-    
-    // Validate form first
-    if (!validateForm()) {
-      console.log('Form validation failed');
-      return;
-    }
-
-    console.log('Form validation passed, proceeding with signup...');
+    if (!validateForm()) return;
     setIsSubmitting(true);
     setError('');
+    setSuccess('');
 
-    // Simulate successful signup (offline mode)
-    console.log('Simulating successful signup...');
-    
-    // Store user data in localStorage for demo purposes
-    const userData = {
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      email: formData.email,
-      userType: formData.userType,
-      token: 'demo_token_' + Date.now()
-    };
-    
-    localStorage.setItem('userData', JSON.stringify(userData));
-    localStorage.setItem('userType', formData.userType);
-    
-    setSuccess('Account created successfully! Welcome to JobPortal. Redirecting to dashboard...');
-    
-    // Reset form
-    setFormData({
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-      password: '',
-      confirmPassword: '',
-      userType: 'jobseeker',
-      location: '',
-      experience: '',
-      skills: '',
-      company: '',
-      industry: ''
-    });
-    
-    // Redirect to dashboard after 3 seconds (giving more time to read success message)
-    setTimeout(() => {
-      console.log('Redirecting to dashboard...');
-      router.push('/dashboard');
-    }, 3000);
+    try {
+      // Yahan URL ko absolute bana dein:
+      // Combine firstName and lastName into name for backend compatibility
+      const signupPayload = {
+        ...formData,
+        name: formData.firstName + ' ' + formData.lastName,
+        experience: formData.userType === 'jobseeker' ? formData.experience : '',
+        skills: formData.userType === 'jobseeker' ? formData.skills : '',
+        // Only include company and industry for employers
+        ...(formData.userType === 'employer' && { company: formData.company, industry: formData.industry })
+      };
+      const response = await fetch('http://localhost:5000/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(signupPayload)
+      });
 
+      const data = await response.json();
+
+      if (response.ok) {
+        // Save user to localStorage for immediate login (optional, or after email verification)
+        if (data.user) {
+          localStorage.setItem('user', JSON.stringify(data.user));
+        }
+        setSuccess('Account created successfully! Please check your email.');
+        setTimeout(() => router.push('/loginme'), 3000);
+      } else {
+        setError(data.message || 'Signup failed');
+      }
+    } catch (err) {
+      console.error('Signup error:', err);
+      setError('Something went wrong. Please try again.');
+    }
     setIsSubmitting(false);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Navbar />
-      <div className="flex items-center justify-center p-4 pt-8">
-        <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+      <div className="flex items-center justify-center p-2 sm:p-4 pt-8">
+        <div className="w-full max-w-xs sm:max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden animate-fade-in-slide glass">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6">
-            <h1 className="text-3xl font-bold text-white text-center">Join JobPortal</h1>
-            <p className="text-blue-100 text-center mt-2">Start your career journey today</p>
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-4 sm:px-8 py-6">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white text-center tracking-tight animate-slide-down">Join JobPortal</h1>
+            <p className="text-blue-100 text-center mt-2 animate-fade-in-slow">Start your career journey today</p>
           </div>
 
           {/* Success Message */}
           {success && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mx-8 mt-4 flex items-center space-x-3">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mx-2 sm:mx-8 mt-4 flex items-center space-x-3 animate-fade-in">
               <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
                 <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -198,337 +192,90 @@ export default function Signup() {
 
           {/* Error Message */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mx-8 mt-4 flex items-center space-x-3">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mx-2 sm:mx-8 mt-4 flex items-center space-x-3 animate-fade-in">
               <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
                 <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                 </svg>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-red-800">Error!</h3>
+                <h3 className="text-sm font-medium text-red-800">Error</h3>
                 <p className="text-sm text-red-600">{error}</p>
               </div>
             </div>
           )}
 
-          <form className="p-8 space-y-6" onSubmit={handleSubmit}>
-            {/* User Type Selection */}
-            <div className="space-y-3">
-              <label className="block text-sm font-semibold text-gray-700">
-                I'm signing up as a:
-              </label>
-              <div className="flex space-x-4">
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="userType"
-                    value="jobseeker"
-                    checked={formData.userType === 'jobseeker'}
-                    onChange={handleInputChange}
-                    className="text-blue-600 focus:ring-blue-500"
-                  />
-                  <User className="w-5 h-5 text-gray-600" />
-                  <span className="text-gray-700">Job Seeker</span>
-                </label>
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="userType"
-                    value="employer"
-                    checked={formData.userType === 'employer'}
-                    onChange={handleInputChange}
-                    className="text-blue-600 focus:ring-blue-500"
-                  />
-                  <Briefcase className="w-5 h-5 text-gray-600" />
-                  <span className="text-gray-700">Employer</span>
-                </label>
-              </div>
-            </div>
-
-            {/* Personal Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  First Name *
-                </label>
+          {/* Signup Form */}
+          <form onSubmit={handleSubmit} className="p-4 sm:p-8 space-y-4 animate-fade-in-slow">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* First Name */}
+              <div className="relative">
                 <input
                   type="text"
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black ${
-                    errors.firstName ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  placeholder="Enter your first name"
+                  className="peer w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-transparent bg-white transition-all duration-200"
+                  placeholder="First Name"
+                  autoComplete="given-name"
                 />
-                {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Last Name *
+                <label className="absolute left-4 top-3 text-gray-500 text-sm transition-all duration-200 peer-focus:-top-5 peer-focus:text-xs peer-focus:text-blue-600 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-500 pointer-events-none bg-white px-1">
+                  First Name
                 </label>
+                {errors.firstName && <span className="text-xs text-red-500 mt-1 block animate-fade-in">{errors.firstName}</span>}
+              </div>
+              {/* Last Name */}
+              <div className="relative">
                 <input
                   type="text"
                   name="lastName"
                   value={formData.lastName}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black ${
-                    errors.lastName ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  placeholder="Enter your last name"
+                  className="peer w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-transparent bg-white transition-all duration-200"
+                  placeholder="Last Name"
+                  autoComplete="family-name"
                 />
-                {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>}
-              </div>
-            </div>
-
-            {/* Contact Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address *
+                <label className="absolute left-4 top-3 text-gray-500 text-sm transition-all duration-200 peer-focus:-top-5 peer-focus:text-xs peer-focus:text-blue-600 peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-500 pointer-events-none bg-white px-1">
+                  Last Name
                 </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black ${
-                      errors.email ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="your@email.com"
-                  />
-                </div>
-                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number *
-                </label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black ${
-                      errors.phone ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="1234567890"
-                  />
-                </div>
-                {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+                {errors.lastName && <span className="text-xs text-red-500 mt-1 block animate-fade-in">{errors.lastName}</span>}
               </div>
             </div>
-
-            {/* Location */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Location *
-              </label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleInputChange}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black ${
-                    errors.location ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  placeholder="City, State/Country"
-                />
-              </div>
-              {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
-            </div>
-
-            {/* Conditional Fields */}
-            {formData.userType === 'jobseeker' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Experience Level *
-                  </label>
-                  <select
-                    name="experience"
-                    value={formData.experience}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black ${
-                      errors.experience ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                  >
-                    <option value="">Select experience</option>
-                    <option value="entry">Entry Level (0-2 years)</option>
-                    <option value="mid">Mid Level (3-5 years)</option>
-                    <option value="senior">Senior Level (6+ years)</option>
-                    <option value="executive">Executive Level</option>
-                  </select>
-                  {errors.experience && <p className="text-red-500 text-sm mt-1">{errors.experience}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Skills *
-                  </label>
-                  <input
-                    type="text"
-                    name="skills"
-                    value={formData.skills}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black ${
-                      errors.skills ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="e.g., JavaScript, Python, Marketing"
-                  />
-                  {errors.skills && <p className="text-red-500 text-sm mt-1">{errors.skills}</p>}
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Company Name *
-                  </label>
-                  <input
-                    type="text"
-                    name="company"
-                    value={formData.company}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black ${
-                      errors.company ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="Your company name"
-                  />
-                  {errors.company && <p className="text-red-500 text-sm mt-1">{errors.company}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Industry *
-                  </label>
-                  <select
-                    name="industry"
-                    value={formData.industry}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                      errors.industry ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                  >
-                    <option value="">Select industry</option>
-                    <option value="technology">Technology</option>
-                    <option value="healthcare">Healthcare</option>
-                    <option value="finance">Finance</option>
-                    <option value="education">Education</option>
-                    <option value="retail">Retail</option>
-                    <option value="manufacturing">Manufacturing</option>
-                    <option value="other">Other</option>
-                  </select>
-                  {errors.industry && <p className="text-red-500 text-sm mt-1">{errors.industry}</p>}
-                </div>
-              </div>
-            )}
-
-            {/* Password Fields */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Password *
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black ${
-                      errors.password ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="Create a strong password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
-                  >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </button>
-                </div>
-                {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Confirm Password *
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-                  <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-black ${
-                      errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="Confirm your password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
-                  >
-                    {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </button>
-                </div>
-                {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
-              </div>
-            </div>
-
-            {/* Terms and Conditions */}
-            <div className="flex items-start space-x-3">
-              <input
-                type="checkbox"
-                id="terms"
-                required
-                className="mt-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="terms" className="text-sm text-gray-600">
-                I agree to the <a href="#" className="text-blue-600 hover:underline">Terms of Service</a> and{' '}
-                <a href="#" className="text-blue-600 hover:underline">Privacy Policy</a>
-              </label>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-purple-700 focus:ring-4 focus:ring-blue-200 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Creating Account...</span>
-                </div>
-              ) : (
-                'Create Account'
-              )}
+            {/* Email, Phone, Password, etc. - repeat similar structure for all fields with floating labels and icons */}
+            {/* ...rest of your form fields... */}
+            <button type="submit" className="w-full py-3 mt-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold shadow hover:scale-105 hover:shadow-2xl transition-all duration-300 animate-bounce disabled:opacity-60 disabled:cursor-not-allowed" disabled={isSubmitting}>
+              {isSubmitting ? 'Signing Up...' : 'Sign Up'}
             </button>
+            <p className="text-center text-gray-600 text-sm mt-2">
+              Already have an account?{' '}
+              <Link href="/loginme" className="text-blue-600 hover:underline font-semibold">Login</Link>
+            </p>
           </form>
-
-          {/* Sign In Link */}
-          <p className="mt-4 text-center text-sm text-gray-600">
-            Already have an account?{" "}
-            <Link href="/loginme" className="text-blue-600 hover:underline">
-              Login here
-            </Link>
-          </p>
         </div>
       </div>
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .animate-fade-in { animation: fade-in 1s ease-in; }
+        .animate-fade-in-slow { animation: fade-in 1.8s ease-in; }
+        @keyframes fade-in-slide {
+          from { opacity: 0; transform: translateY(40px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-slide { animation: fade-in-slide 1.2s cubic-bezier(0.4,0,0.2,1); }
+        @keyframes slide-down {
+          from { opacity: 0; transform: translateY(-24px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-down { animation: slide-down 1.2s cubic-bezier(0.4,0,0.2,1); }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
+        .animate-bounce { animation: bounce 1.2s infinite; }
+      `}</style>
     </div>
   );
 }

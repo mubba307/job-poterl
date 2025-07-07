@@ -18,8 +18,7 @@ import {
   ChevronDown,
   ChevronUp,
   Clock,
-  Activity,
-  Login
+  Activity
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -555,7 +554,7 @@ const AdminDashboard = () => {
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-indigo-100 rounded-lg">
-                  <Login className="w-6 h-6 text-indigo-600" />
+                  <LogOut className="w-6 h-6 text-indigo-600" />
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Total Logins</p>

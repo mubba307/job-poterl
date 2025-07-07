@@ -6,7 +6,7 @@ import React from 'react';
 export default function Signupme() {
   return (
     <div>
-      <Navbar />
+      
       <Signup />
     </div>
   );
